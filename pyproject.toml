@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "akari-bot-text-cryption-backend"
+version = "0.1.0"
+description = ""
+authors = ["yzhh <31803608+OasisAkari@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+ff3 = "^1.0.2"
+fastapi = "^0.114.2"
+uvicorn = "^0.30.6"
+toml = "^0.10.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
