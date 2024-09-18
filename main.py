@@ -1,11 +1,12 @@
 import traceback
 
 import toml
-from ff3 import FF3Cipher
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
+from ff3 import FF3Cipher
 from pydantic import BaseModel
+
 
 class Text(BaseModel):
     text: str
@@ -21,15 +22,37 @@ c = FF3Cipher.withCustomAlphabet(key, tweak, "0123456789abcdefghijklmnopqrstuvwx
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.post('/encrypt/')
 async def encrypt(text: Text):
     try:
-        return {"encrypted": c.encrypt(text.text)}
+
+
+        j_t = 't:'+text.text+':e'
+        texts = []
+        # split text for each 28 characters
+        for i in range(0, len(j_t), 28):
+            texts.append(j_t[i:i+28])
+        if len(texts[-1]) < 4:
+            texts[-1] = texts[-1].ljust(4, '0')
+        encrypted_texts = []
+        for t in texts:
+            encrypted_texts.append(c.encrypt(t))
+        return {"encrypted": ''.join(encrypted_texts)}
     except Exception:
+        fm  = traceback.format_exc()
+        print(fm)
         return JSONResponse(status_code=500, content={
             "detail": "Internal Server Error",
-            "message": traceback.format_exc()
+            "message": fm
         })
 
 if __name__ == '__main__':
