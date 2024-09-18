@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from ff3 import FF3Cipher
 from pydantic import BaseModel
 
+import random
 
 class Text(BaseModel):
     text: str
@@ -18,8 +19,12 @@ cfg_read = toml.loads(open(config_path, 'r', encoding='utf-8').read())
 
 key = cfg_read['secret']['key']
 tweak = cfg_read['secret']['tweak']
-c = FF3Cipher.withCustomAlphabet(key, tweak, "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
+alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+c = FF3Cipher.withCustomAlphabet(key, tweak, alphabet)
 
+
+def random_string(length: int) -> str:
+    return ''.join(random.choices(alphabet, k=length))
 app = FastAPI()
 
 app.add_middleware(
@@ -34,9 +39,7 @@ app.add_middleware(
 @app.post('/encrypt/')
 async def encrypt(text: Text):
     try:
-
-
-        j_t = 't:'+text.text+':e'
+        j_t = random_string(2) + ':'+text.text+':' + random_string(2)
         texts = []
         # split text for each 28 characters
         for i in range(0, len(j_t), 28):
